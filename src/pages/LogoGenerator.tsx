@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Download } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const LogoGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedLogo, setGeneratedLogo] = useState<{
+    description: string;
+    style: string;
+  } | null>(null);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast({
         title: "Error",
@@ -21,13 +26,53 @@ const LogoGenerator = () => {
     }
 
     setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      toast({
-        title: "¡Logo generado!",
-        description: "Tu diseño está listo para personalizar tu prenda",
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-logo', {
+        body: { 
+          prompt: prompt,
+          style: 'modern',
+          colors: ['#FFD700', '#000000']
+        }
       });
-    }, 2000);
+
+      if (error) {
+        console.error('Error:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo generar el logo. Intenta de nuevo.",
+          variant: "destructive",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      if (data?.success) {
+        setGeneratedLogo({
+          description: data.description,
+          style: data.style
+        });
+        toast({
+          title: "¡Logo generado!",
+          description: "Tu diseño está listo",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data?.error || "No se pudo generar el logo",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('Error generando logo:', err);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error inesperado",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -105,13 +150,28 @@ const LogoGenerator = () => {
             <h2 className="mb-4 text-2xl font-semibold text-card-foreground">
               Vista Previa
             </h2>
-            <div className="flex aspect-square items-center justify-center rounded-lg bg-muted">
+            <div className="flex aspect-square items-center justify-center rounded-lg bg-muted p-6">
               {isGenerating ? (
                 <div className="text-center">
                   <div className="mb-4 animate-pulse text-6xl">✨</div>
                   <p className="text-muted-foreground">
-                    Generando tu diseño...
+                    Generando tu diseño con IA...
                   </p>
+                </div>
+              ) : generatedLogo ? (
+                <div className="text-center w-full">
+                  <div className="mb-4 text-4xl">🎨</div>
+                  <div className="bg-card p-4 rounded-lg border border-border">
+                    <h3 className="font-semibold mb-2 text-card-foreground">Logo Generado</h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {generatedLogo.description}
+                    </p>
+                    <div className="mt-3">
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                        Estilo: {generatedLogo.style}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center">
@@ -126,15 +186,16 @@ const LogoGenerator = () => {
               <Button
                 variant="outline"
                 className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                disabled={!isGenerating && !prompt}
+                disabled={!generatedLogo}
               >
                 Aplicar a Prenda
               </Button>
               <Button
                 variant="outline"
                 className="w-full"
-                disabled={!isGenerating && !prompt}
+                disabled={!generatedLogo}
               >
+                <Download className="mr-2 h-4 w-4" />
                 Descargar Diseño
               </Button>
             </div>

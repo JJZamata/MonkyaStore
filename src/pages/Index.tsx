@@ -4,7 +4,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { ProductCatalog } from '@/components/ProductCatalog';
 import { CustomizeSection } from '@/components/CustomizeSection';
 import { AILogoSection } from '@/components/AILogoSection';
-import { Footer } from '@/components/Footer';
+import Footer from '@/components/Footer';
 import { LoginScreen } from '@/components/LoginScreen';
 import { RegisterScreen } from '@/components/RegisterScreen';
 import { ProfileScreen } from '@/components/ProfileScreen';
