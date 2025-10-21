@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProductCard, Product } from './ProductCard';
+import { CartItem } from './CartScreen';
 import { Search, Filter, Grid3X3, List } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import poloWhite from '@/assets/polo-white.jpg';
 import tshirtBlack from '@/assets/tshirt-black.jpg';
 
@@ -84,9 +86,10 @@ const mockProducts: Product[] = [
 
 interface ProductCatalogProps {
   onCustomizeProduct: (product: Product) => void;
+  onAddToCart?: (item: Omit<CartItem, 'id'>) => void;
 }
 
-export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onCustomizeProduct }) => {
+export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onCustomizeProduct, onAddToCart }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | 'polo' | 'polera'>('all');
   const [priceRange, setPriceRange] = useState<'all' | 'low' | 'mid' | 'high'>('all');
@@ -157,8 +160,28 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({ onCustomizeProdu
   };
 
   const handleAddToCart = (product: Product) => {
-    // TODO: Implementar lógica de carrito
-    console.log('Added to cart:', product);
+    if (onAddToCart) {
+      const finalPrice = product.discount 
+        ? product.basePrice * (1 - product.discount / 100) 
+        : product.basePrice;
+      
+      onAddToCart({
+        productId: product.id,
+        name: product.name,
+        type: product.type,
+        color: product.colors[0],
+        colorName: 'Color base',
+        size: 'M',
+        price: finalPrice,
+        quantity: 1,
+        image: product.image
+      });
+    } else {
+      toast({
+        title: "¡Añadido al carrito!",
+        description: `${product.name} agregado exitosamente`,
+      });
+    }
   };
 
   return (

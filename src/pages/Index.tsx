@@ -11,11 +11,13 @@ import { ProfileScreen } from '@/components/ProfileScreen';
 import { CheckoutScreen } from '@/components/CheckoutScreen';
 import { OrderConfirmationScreen } from '@/components/OrderConfirmationScreen';
 import { Product } from '@/components/ProductCard';
+import { CartScreen, CartItem } from '@/components/CartScreen';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
-  const [cartItems, setCartItems] = useState(2); // Simulamos 2 items en el carrito
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleSectionChange = (section: string) => {
@@ -81,6 +83,34 @@ const Index = () => {
     setCurrentSection('profile');
   };
 
+  const handleAddToCart = (item: Omit<CartItem, 'id'>) => {
+    const newItem: CartItem = {
+      ...item,
+      id: `${item.productId}-${Date.now()}-${Math.random()}`
+    };
+    setCartItems(prev => [...prev, newItem]);
+    toast({
+      title: "¡Añadido al carrito!",
+      description: `${item.name} - ${item.colorName} (${item.size})`,
+    });
+  };
+
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    setCartItems(prev => 
+      prev.map(item => 
+        item.id === itemId ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const handleRemoveFromCart = (itemId: string) => {
+    setCartItems(prev => prev.filter(item => item.id !== itemId));
+    toast({
+      title: "Producto eliminado",
+      description: "El producto ha sido eliminado del carrito",
+    });
+  };
+
   const renderCurrentSection = () => {
     switch (currentSection) {
       case 'home':
@@ -93,7 +123,10 @@ const Index = () => {
       case 'catalog':
         return (
           <div className="pt-16">
-            <ProductCatalog onCustomizeProduct={handleCustomizeProduct} />
+            <ProductCatalog 
+              onCustomizeProduct={handleCustomizeProduct}
+              onAddToCart={handleAddToCart}
+            />
           </div>
         );
       case 'customize':
@@ -102,6 +135,7 @@ const Index = () => {
             <CustomizeSection 
               selectedProduct={selectedProduct}
               onCreateLogo={handleCreateLogo}
+              onAddToCart={handleAddToCart}
             />
           </div>
         );
@@ -112,34 +146,20 @@ const Index = () => {
           </div>
         );
       case 'cart':
-        if (!isLoggedIn) {
-          return <LoginScreen onLogin={handleLogin} onRegister={handleGoToRegister} />;
-        }
         return (
-          <div className="pt-16 min-h-screen flex items-center justify-center">
-            <div className="text-center space-y-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl mx-auto flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-2.4 0L3 3z" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-bold text-gradient-primary">Tu Carrito</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Tienes {cartItems} productos listos para personalizar y comprar
-              </p>
-              <div className="space-y-3">
-                <button 
-                  onClick={handleGoToCheckout}
-                  className="bg-gradient-to-r from-primary to-primary-light text-white px-8 py-3 rounded-xl font-medium hover:shadow-glow-primary transform hover:scale-105 transition-all duration-300"
-                >
-                  Proceder al Checkout
-                </button>
-                <p className="text-sm text-muted-foreground">
-                  *Funcionalidad completa del carrito próximamente
-                </p>
-              </div>
-            </div>
-          </div>
+          <CartScreen 
+            cartItems={cartItems}
+            onUpdateQuantity={handleUpdateQuantity}
+            onRemoveItem={handleRemoveFromCart}
+            onGoToCheckout={() => {
+              if (!isLoggedIn) {
+                setCurrentSection('login');
+              } else {
+                handleGoToCheckout();
+              }
+            }}
+            onContinueShopping={() => setCurrentSection('catalog')}
+          />
         );
       case 'profile':
         if (!isLoggedIn) {
@@ -177,7 +197,7 @@ const Index = () => {
       <Navbar 
         currentSection={currentSection}
         onSectionChange={handleSectionChange}
-        cartItems={cartItems}
+        cartItems={cartItems.length}
         isLoggedIn={isLoggedIn}
       />
       

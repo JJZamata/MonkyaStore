@@ -44,12 +44,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <Palette className="w-4 h-4 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-gradient-primary">
-              FlexWear
+          <div 
+            className="flex items-center space-x-3 cursor-pointer"
+            onClick={() => handleNavClick('home')}
+          >
+            <img 
+              src="/src/assets/monkya-logo.png" 
+              alt="MONKYA Logo" 
+              className="w-10 h-10 object-contain"
+            />
+            <h1 className="text-xl font-bold text-foreground">
+              MONKYA
             </h1>
           </div>
 

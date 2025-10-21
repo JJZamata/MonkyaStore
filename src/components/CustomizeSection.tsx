@@ -6,11 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Palette, Upload, Sparkles, RotateCcw, ShoppingCart, Eye } from 'lucide-react';
 import { Product } from './ProductCard';
+import { CartItem } from './CartScreen';
 import poloWhite from '@/assets/polo-white.jpg';
 
 interface CustomizeSectionProps {
   selectedProduct?: Product;
   onCreateLogo: () => void;
+  onAddToCart: (item: Omit<CartItem, 'id'>) => void;
 }
 
 const colorOptions = [
@@ -28,7 +30,8 @@ const sizeOptions = ['S', 'M', 'L', 'XL', 'XXL'];
 
 export const CustomizeSection: React.FC<CustomizeSectionProps> = ({ 
   selectedProduct, 
-  onCreateLogo 
+  onCreateLogo,
+  onAddToCart
 }) => {
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedSize, setSelectedSize] = useState('M');
@@ -48,6 +51,23 @@ export const CustomizeSection: React.FC<CustomizeSectionProps> = ({
   };
 
   const totalPrice = currentProduct.basePrice * quantity;
+
+  const handleAddToCartClick = () => {
+    onAddToCart({
+      productId: currentProduct.id,
+      name: currentProduct.name,
+      type: currentProduct.type,
+      color: selectedColor.value,
+      colorName: selectedColor.name,
+      size: selectedSize,
+      price: currentProduct.basePrice,
+      quantity: quantity,
+      image: currentProduct.image,
+      customization: {
+        logoPosition: logoPosition
+      }
+    });
+  };
 
   return (
     <section className="py-16 bg-background">
@@ -308,7 +328,11 @@ export const CustomizeSection: React.FC<CustomizeSectionProps> = ({
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
-              <Button size="lg" className="btn-primary h-14 text-lg">
+              <Button 
+                size="lg" 
+                className="btn-primary h-14 text-lg"
+                onClick={handleAddToCartClick}
+              >
                 <ShoppingCart className="w-5 h-5 mr-3" />
                 Agregar al Carrito - ${totalPrice.toFixed(2)}
               </Button>
