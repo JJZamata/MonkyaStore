@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Catalog from "./pages/Catalog";
 import Customize from "./pages/Customize";
 import LogoGenerator from "./pages/LogoGenerator";
+import LogoEditor from "./pages/LogoEditor";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,7 +22,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/customize" element={<Customize />} />
-          <Route path="/logo-generator" element={<LogoGenerator />} />
+          <Route path="/logo-generator" element={<LogoEditor />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
